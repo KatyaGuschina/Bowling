@@ -1,9 +1,9 @@
 # coding: UTF-8
 
-from bowling.game import MAX_RESULT
+#from bowling.game import my_logger, MAX_RESULT
 from bowling.throw import Throw
 
-
+MAX_RESULT = 10
 class Frame:
 
     def __init__(self, string, first_throw, second_throw=0):
@@ -29,5 +29,5 @@ class Frame:
 
         if self.spare:
             score += self.next_frame.first_throw.knocked_off
-        #my_logger.debug(u'Общий счет броска {}'.format(score))
+        #my_logger.debug(u'РћР±С‰РёР№ СЃС‡РµС‚ Р±СЂРѕСЃРєР° {}'.format(score))
         return score

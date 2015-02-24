@@ -2,9 +2,9 @@
 
 import argparse
 import logging
-import texttable as tt
+# import texttable as tt
 import sys
-from bowling.parse import Parse
+# from bowling.parse import Parse
 from bowling.frame import Frame
 
 MAX_RESULT = 10
@@ -18,51 +18,83 @@ my_logger.addHandler(hdlr)
 
 ex = "8/9-X X 6/4/X 8-X XXX"
 
+
 class Game:
 
     def __init__(self, string):
-        self.string_frames = list(Parse(ex).parse())
         self.string = string
-        self.frames = list(self.get_frames())
+        self.frames = list(self.parse())
 
     def get_frame_result(self):
         fn = 0
-        # for index, frame in enumerate(self.frames[:-1]):
-        #     frame.next_frame = self.frames[index+1]
-        for frame in self.frames:
+        for index, frame in enumerate(self.frames[:-1]):
+            frame.next_frame = self.frames[index+1]
+        for frame in self.frames[:FRAMES]:
             fn = fn + frame.get_total_score()
             my_logger.debug(u'Общее количество набранных очков - {}'.format(fn))
             yield fn
 
-    def get_frames(self):
-        line = iter(self.string_frames)
+    def parse(self):
+        res = filter(lambda x: x.strip(' '), self.string)
+        line = iter(res)
+        i = 0
         while line:
-            first_throw = line.next()
-            first = first_throw[0]
-            second = first_throw[1]
-            if second == '' or second == '-':
-                second = 0
+            i = i + 1
+            first = line.next()
+            s = 0
+            f = first
             if first == 'X':
-                yield Frame(10, 0)
+                yield Frame(f, 10, 0)
                 continue
-            if first == 'XX':
-                yield Frame(20, 0)
-            if first == 'XXX':
-                first = 30
+            elif first == '/':
+                raise Exception('Ошибка ввода, первый удар не может быть spare!')
+            if line:
+                try:
+                    second = line.next()
+                    if second == 'X':
+                        raise Exception('Ошибка ввода, второй удар не может быть strike!')
+                    s = second
+                except StopIteration:
+                    s = ''
+                    second = 0
             else:
+                second = 0
+
+            if first == '-':
+                first = 0
+            else:
+                if first == '/':
+                    raise Exception('Введенны некорректные данные')
                 first = int(first)
             if second == '/':
                 second = MAX_RESULT - first
-            yield Frame(first, second)
+            elif second == '-':
+                second = 0
+            else:
+                second = int(second)
+            yield Frame(f + s, first, second)
 
     def get_final_result(self):
         game = Game(ex)
-        parse = Parse(ex)
-        gen = list(parse.parse())
-        l1 = [x for x in gen]
-        list_frames = []
-        for q in l1:
-            list_frames.append(q[0] + q[1])
+        gen = list(game.parse())
+        list_frames = [x.string for x in gen]
+        try:
+            ten = list_frames.pop(10)
+        except IndexError:
+            ten = ''
+        try:
+            eleven = list_frames.pop(10)
+        except IndexError:
+            eleven = ''
+        try:
+            list_frames.pop(10)
+            return u'Слишком длинное значени строки'
+        except IndexError:
+            pass
+        try:
+            list_frames[9] = str(list_frames[9]) + str(ten) + str(eleven)
+        except IndexError:
+            return u'Слишком короткое значение строки'
         t = tt.Texttable()
         header = ['1', '2', '3', '4',  '5', '6', '7', '8', '9', '10']
         t.header(header)

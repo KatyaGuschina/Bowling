@@ -2,10 +2,10 @@
 
 import argparse
 import logging
-# import texttable as tt
+import texttable as tt
 import sys
 # from bowling.parse import Parse
-from bowling.frame import Frame
+from bowling.frame import Frame 
 
 MAX_RESULT = 10
 FRAMES = 10
